@@ -1,0 +1,30 @@
+
+
+select
+
+supplier_Cbn,CC.COUNTRY_CODE,ISO_CODE,COUNTRY_NAME,C.CUST_ID,COMPANY_NAME,SUPPLIER_cBN,RETURN_PERIOD,DOA_PERIOD,PRE_PARAM_X, PRE_PARAM_Y,PRE_PARAM_Z, PRE_PARAM_DOA,
+LOCATION_NAME, ADDRESS_1,ADDRESS_2,TOWN,ZIP_CODE
+
+from wizadmin.country cc,wizadmin.company_profile c,wizadmin.delivery_Address da
+
+where cc.country_code =da.country_code
+
+and da.DEFAULT_delivery_FLAG ='Y'
+
+AND c.cust_id = da.cust_id
+
+and c.type ='COMP_ASP'
+
+UNION
+
+select supplier_cbn,CC.COUNTRY_CODE,ISO_CODE,COUNTRY_NAME,C.CUST_ID,COMPANY_NAME,SUPPLIER_cBN,RETURN_PERIOD,DOA_PERIOD,PRE_PARAM_X, PRE_PARAM_Y,PRE_PARAM_Z, PRE_PARAM_DOA,
+LOCATION_NAME, ADDRESS_1,ADDRESS_2,TOWN,ZIP_CODE
+
+from wizadmin.country cc,wizadmin.company_profile c,wizadmin.delivery_Address da
+
+where cc.country_code =da.country_code
+
+and da.DEFAULT_delivery_FLAG ='Y'
+
+AND c.cust_id = da.cust_id
+and c.CUST_ID =45
