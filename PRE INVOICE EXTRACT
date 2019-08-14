@@ -1,0 +1,54 @@
+select 
+
+c.SUPPLIER_CBN,wty_REF,wh.STATUS,DECLARED_DATE,PREINVOICED_DATE, m.PREINVOICE_ID, m.CUST_ID
+,m.MONTH ,m.WTY_ID ,m.SUPPLIER_CBN, WH.PRODUCT_NUMBER,
+WH.SERIAL_NUMBER, d.LINE_NUMBER, PART_NUMBER, WD.RMA_NUMBER ,REIMBURSEMENT_FLAG ,QTY,
+m.CURRENCY_CODE, REIMBURSEMENT_AMOUNT, labor_reimbursement ,PREINVOICE_CASE,packing_Ref,shipment_date
+
+from 
+wizadmin.monitoring_preinvoice m,wizadmin.preinvoice_Detail d, wizadmin.company_profile c, wizadmin.WTY_HEADER WH, wizadmin.WTY_DETAIL WD
+where m.preinvoice_id =d.preinvoice_id
+and m.cust_ID =c.cust_id and WH.WTY_ID =WD.WTY_ID AND m.wty_id =wh.wty_id  and wd.line_number=d.line_number
+AND d.part_number = wd.part_Declared AND m.cust_id = wh.cust_id
+
+/* MONTH NEEDS TO BE UPDATED */
+and c.type = 'COMP_ASP' and month ='201907'
+and reimbursement_flag ='N'
+AND
+c.supplier_cbn not in
+('CSP_NVANBE','TALDOROOW',
+'OOW_AUCHANFR',
+'CSP_AS1000439',
+'CSP_AS1000444',
+'OOW_COMSERVE',
+'CSP_AS1000416',
+'CSP_AS1000415',
+'OOW_MULTCY',
+'BDHOOW',
+'CSP_SMSJOO',
+'CSP_YAGKOO',
+'AS1000468',
+'OOW_CPCDI',
+'OOW_CSP000261',
+'RSSOOW',
+'ITCOOW',
+'HPDEX',
+'CSP_AS1000412',
+'CSP_AS1000404',
+'CSP_CMSCOM',
+'CSP_DCSIW',
+'CSP_AS1000405',
+'CSP000458',
+'CSP000488',
+'CSP_SNETLL',
+'CSP000491',
+'CSP_ORSIKI',
+'CSP_AS1000454',
+'CSP000285',
+'CSP_AS1000443',
+'CSP000357',
+'CSP_SERVNL',
+'MSCPAV',
+'JARIROOW','CSP000504','CSP000472','CSP000502','CSP000522','CSP000523')
+
+/* CONFIRM THE FOLLOWING CSP: 'JARIROOW','CSP000504','CSP000472','CSP000502','CSP000522','CSP000523', QUATATIONS WERE REMOVED */
