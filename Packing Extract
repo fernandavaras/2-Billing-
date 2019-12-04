@@ -1,0 +1,161 @@
+ELECT 
+
+SUPPLIER_CBN||RMA_NUMBER||PART_DECLARED, SUPPLIER_CBN,h.PACKING_ID,C.CUST_ID,PACKING_REF,CREATION_DATE
+
+FROM WIZADMIN.COMPANY_PROFILE C, WIZADMIN.PACKING_HEADER H, WIZADMIN.PACKING_DETAIL D 
+
+WHERE C.CUST_ID = H.CUST_ID
+
+AND H.PACKING_ID = D.PACKING_ID 
+
+AND rma_number in  
+
+(SELECT DISTINCT RMA_NUMBER FROM   
+
+(SELECT * FROM (SELECT ORD.SUPPLIER_cBN||ORD.RMA_NUMBER||ORD.PART_ORDERED||ORD.LINE_NUMBER  
+
+"CBN|RMA|PART|LINE",  
+
+ORD.COUNTRY_NAME,ORD.supplier_cbn, ORD.company_name,  
+
+ORD.RETURN_PERIOD "RETURN_WINDOW",ORD.DOA_PERIOD "DOA_WINDOW",PRE_PARAM_Z "Z PARAM" ,ORD.PRE_PARAM_X "X PARAM", ORD.PRE_PARAM_Y "Y PARAM", ORD.PRE_PARAM_DOA, 
+
+ORD.po_number,ORD.rma_number,ORD.ordered_date,SHIPMENT_Date "SHIPMENT_DATE" , NULL "SHIPPED YEAR", NULL    "SHIPPED MONTH" ,NULL    "SHIPPED - YEARMONTH", NULL "SYSTEM_DATE", 
+
+NULL "SHIP_D+RET_W",NULL "SHIP_D+RET_W_YEAR",NULL "SHIP_D+RET_YM",ORD.SUPPLIER_cBN||ORD.RMA_NUMBER||ORD.PART_ORDERED "SUPPLIER_CBN||RMA||PART" , 
+
+NULL "MAX PACKING_DATE",NULL "PACKING_DATE + Z", NULL "SYSTEM_DATE+PD+Z" ,  
+
+ORD.status, ORD.line_number,ORD.part_ordered,ORD.COMMODITY_CODE,ORD.qty_ordered,ORD.price, 
+
+nvl(SHIP.qtyshipped,0) "QTY SHIPPED",ORD.defective_return_flag,PAC.qtydeclaredpacking "QTY PACKING",null "QTY PACKING TO BE CREATED", PAC2.qtyreturned "QTY RETURNED",nvl(WTY.qtywty,0) "QTY_CLAIMED", PRE.qty_reimburse "QTY_REIMBURSED",nvl(SHIP.qtyshipped,0)-nvl(WTY.qtywty,0) "QTY_TO_BE_CLAIMED", null "CREDIT / NO CREDIT CASE" 
+
+FROM              (SELECT CCC.COUNTRY_NAME,c.supplier_cbn,c.company_name, 
+
+             RETURN_PERIOD ,DOA_PERIOD ,PRE_PARAM_Z  ,PRE_PARAM_X , PRE_PARAM_Y , PRE_PARAM_DOA, 
+
+              c.TYPE,h.po_number, h.rma_number, h.order_id, d.part_ordered,III.COMMODITY_CODE, d.line_number, d.qty_ordered, h.ordered_date, ss.shipment_date,d.defective_return_flag, d.status ,price 
+
+              FROM WIZADMIN.ORDER_HEADER h, WIZADMIN.ORDER_DETAIL d, WIZADMIN.COMPANY_PROFILE c , WIZADMIN.DELIVERY_ADDRESS DAA, WIZADMIN.COUNTRY CCC, WIZADMIN.PART_INFO III, WIZADMIN.SHIPMENT SS 
+
+              WHERE h.order_id=d.order_id  
+
+              AND H.ORDER_ID =SS.ORDER_ID 
+
+              AND D.LINE_NUMBER = SS.LINE_NUMBER 
+
+              AND DAA.COUNTRY_CODE=CCC.COUNTRY_CODE AND DAA.CUST_ID=C.CUST_ID AND DAA.DEFAULT_DELIVERY_FLAG ='Y' AND III.PART_NUMBER = D.PART_ORDERED 
+
+              AND SHIPMENT_date >= '01-08-2017'
+
+And c.supplier_Cbn not in 
+
+('CSP_NVANBE','TALDOROOW', 
+
+'OOW_AUCHANFR', 
+
+'CSP_AS1000439', 
+
+'CSP_AS1000444', 
+
+'OOW_COMSERVE', 
+
+'CSP_AS1000416', 
+
+'CSP_AS1000415', 
+
+'OOW_MULTCY', 
+
+'BDHOOW', 
+
+'CSP_SMSJOO', 
+
+'CSP_YAGKOO', 
+
+'AS1000468', 
+
+'OOW_CPCDI', 
+
+'OOW_CSP000261', 
+
+'RSSOOW', 
+
+'ITCOOW', 
+
+'HPDEX', 
+
+'CSP_AS1000412', 
+
+'CSP_AS1000404', 
+
+'CSP_CMSCOM', 
+
+'CSP_DCSIW', 
+
+'CSP_AS1000405', 
+
+'CSP000458', 
+
+'CSP000488', 
+
+'CSP_SNETLL', 
+
+'CSP000491', 
+
+'CSP_ORSIKI', 
+
+'CSP_AS1000454', 
+
+'CSP000285', 
+
+'CSP_AS1000443', 
+
+'CSP000357', 
+
+'CSP_SERVNL', 
+
+'MSCPAV', 
+
+'JARIROOW','CSP000504','CSP000472','CSP000502','CSP000522','CSP000523') 
+
+AND c.cust_id=h.cust_id  AND c.TYPE IN ('COMP_ASP','COMP_HP_SP')  
+
+                                      -- AND d.DEFECTIVE_RETURN_FLAG ='Y' 
+
+                         --and rma_number='600614790' 
+
+              ) ORD,  
+
+              (SELECT order_id, line_number, SUM(qty_shipped) AS qtyshipped  
+
+       FROM WIZADMIN.SHIPMENT   
+
+               GROUP BY order_id, line_number) SHIP,  
+
+               (SELECT part_declared, rma_number, SUM(qty_declared) AS qtydeclaredpacking  
+
+                FROM WIZADMIN.PACKING_DETAIL WHERE STATUS IN ('PACDSTAT_MISSING','PACDSTAT_PARTIALLY_RECEIVED','PACDSTAT_RECEIVED','PACDSTAT_IN_TRANSIT') 
+
+                        GROUP BY part_declared, rma_number) PAC,  
+
+                        (SELECT part_declared, rma_number, SUM(qty_returned) AS qtyreturned  
+
+                         FROM WIZADMIN.PACKING_DETAIL WHERE  STATUS  <>'WTYDSTAT_DRAFT' 
+
+                         GROUP BY part_declared, rma_number) PAC2, 
+
+                        (SELECT part_declared, d.rma_number,  SUM(d.QTY_declared) AS qtywty  
+
+                         FROM WIZADMIN.WTY_DETAIL d WHERE STATUS NOT IN ('WTYDSTAT_WARNING','WTYDSTAT_DRAFT') 
+
+                         GROUP BY part_declared, d.rma_number) WTY, 
+
+                        (SELECT part_number, d.rma_number,  SUM(d.QTY) AS qty_reimburse  
+
+                         FROM WIZADMIN.PREINVOICE_DETAIL  d 
+
+                         WHERE d.REIMBURSEMENT_FLAG='Y'
+
+                         GROUP BY part_number, d.rma_number) PRE WHERE ORD.order_id=SHIP.order_id AND ORD.line_number=SHIP.line_number AND PAC.rma_number(+) =ORD.rma_number AND PAC.part_declared(+) =ORD.part_ordered AND PAC2.rma_number(+) =ORD.rma_number AND PAC2.part_declared(+) =ORD.part_ordered AND WTY.part_declared(+) =ORD.part_ordered AND WTY.rma_number(+) =ORD.rma_number AND PRE.part_number(+) =ORD.part_ordered AND PRE.rma_number(+) =ORD.rma_number ORDER BY ORD.supplier_cbn, rma_number, part_ordered 
+
+                         ) WHERE QTY_TO_BE_CLAIMED >0)) 
